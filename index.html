@@ -82,18 +82,7 @@
             border-radius: 5px;
         }
 
-        #name-input {
-            display: none;
-            margin-top: 20px;
-        }
-
-        #name-input input {
-            padding: 10px;
-            font-size: 16px;
-            margin-right: 10px;
-        }
-
-        #name-input button {
+        #next-button {
             padding: 10px 20px;
             font-size: 18px;
             background-color: #4CAF50;
@@ -101,9 +90,10 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            display: none;
         }
 
-        #name-input button:hover {
+        #next-button:hover {
             background-color: #45A049;
         }
     </style>
@@ -113,15 +103,9 @@
 <h1>找因數配對遊戲</h1>
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
-<div id="score">
-    正確配對：<span id="correct-count">0</span> | 錯誤配對：<span id="incorrect-count">0</span>
-</div>
+<div id="score">目前正確配對：<span id="correct-count">0</span></div>
 <div class="pair-display" id="pair-display"></div>
-
-<div id="name-input">
-    <input type="text" id="player-name" placeholder="輸入姓名">
-    <button onclick="saveScore()">保存成績</button>
-</div>
+<button id="next-button" onclick="nextQuestion()">下一題</button>
 
 <!-- 音效檔案 -->
 <audio id="correct-sound" src="correct.mp3"></audio>
@@ -131,39 +115,43 @@
     const numberElement = document.getElementById('number');
     const optionsContainer = document.getElementById('options');
     const correctCountElement = document.getElementById('correct-count');
-    const incorrectCountElement = document.getElementById('incorrect-count');
     const pairDisplay = document.getElementById('pair-display');
-    const nameInput = document.getElementById('name-input');
-    const playerNameInput = document.getElementById('player-name');
+    const nextButton = document.getElementById('next-button');
 
     let targetNumber;
     let factors = [];
     let selectedCards = [];
     let correctCount = 0;
-    let incorrectCount = 0;
+    let currentQuestion = 0;
+    const TOTAL_QUESTIONS = 20;
 
     function startGame() {
         resetGame();
-        generateQuestion();
-        displayOptions();
+        nextQuestion();
     }
 
     function resetGame() {
-        optionsContainer.innerHTML = '';
         correctCount = 0;
-        incorrectCount = 0;
+        currentQuestion = 0;
         correctCountElement.textContent = correctCount;
-        incorrectCountElement.textContent = incorrectCount;
-        selectedCards = [];
+        nextButton.style.display = 'none';
         pairDisplay.innerHTML = '';
-        nameInput.style.display = 'none';
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < TOTAL_QUESTIONS) {
+            generateQuestion();
+            displayOptions();
+            currentQuestion++;
+        } else {
+            alert(`遊戲結束！你完成了 ${correctCount} 次正確配對。`);
+        }
     }
 
     function generateQuestion() {
         targetNumber = Math.floor(Math.random() * 90) + 10;
         numberElement.textContent = targetNumber;
         factors = getFactorPairs(targetNumber);
-        displayPairs();
     }
 
     function getFactorPairs(num) {
@@ -177,6 +165,7 @@
     }
 
     function displayOptions() {
+        optionsContainer.innerHTML = '';
         const flatFactors = factors.flat();
         const extraNumbers = generateNonFactors(flatFactors);
 
@@ -224,10 +213,11 @@
                 second.classList.add('correct');
                 correctCount++;
                 correctCountElement.textContent = correctCount;
+                displayPair(first.dataset.value, second.dataset.value);
+                checkAllMatched();
             } else {
                 playSound('wrong');
-                incorrectCount++;
-                incorrectCountElement.textContent = incorrectCount;
+                setTimeout(() => selectedCards.forEach(card => card.classList.remove('selected')), 500);
             }
             selectedCards = [];
         }
@@ -245,14 +235,18 @@
         sound.play();
     }
 
-    function displayPairs() {
-        pairDisplay.innerHTML = '';
-        factors.forEach(pair => {
-            const pairDiv = document.createElement('div');
-            pairDiv.classList.add('pair');
-            pairDiv.textContent = `${pair[0]} × ${pair[1]}`;
-            pairDisplay.appendChild(pairDiv);
-        });
+    function displayPair(value1, value2) {
+        const pairDiv = document.createElement('div');
+        pairDiv.classList.add('pair');
+        pairDiv.textContent = `${value1} × ${value2}`;
+        pairDisplay.appendChild(pairDiv);
+    }
+
+    function checkAllMatched() {
+        const matchedCards = document.querySelectorAll('.correct');
+        if (matchedCards.length === factors.flat().length) {
+            nextButton.style.display = 'block';
+        }
     }
 
     startGame();
