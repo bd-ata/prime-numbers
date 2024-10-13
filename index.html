@@ -61,6 +61,7 @@
 
         .incorrect {
             background-color: #E57373;
+            cursor: default;
         }
 
         #score {
@@ -91,6 +92,7 @@
             border-radius: 5px;
             cursor: pointer;
             display: none;
+            margin-top: 10px;
         }
 
         #next-button:hover {
@@ -152,6 +154,7 @@
         targetNumber = Math.floor(Math.random() * 90) + 10;
         numberElement.textContent = targetNumber;
         factors = getFactorPairs(targetNumber);
+        pairDisplay.innerHTML = '';  // 清空先前的配對結果
     }
 
     function getFactorPairs(num) {
@@ -211,13 +214,16 @@
                 playSound('correct');
                 first.classList.add('correct');
                 second.classList.add('correct');
-                correctCount++;
-                correctCountElement.textContent = correctCount;
                 displayPair(first.dataset.value, second.dataset.value);
                 checkAllMatched();
             } else {
                 playSound('wrong');
-                setTimeout(() => selectedCards.forEach(card => card.classList.remove('selected')), 500);
+                first.classList.add('incorrect');
+                second.classList.add('incorrect');
+                setTimeout(() => {
+                    first.classList.remove('incorrect', 'selected');
+                    second.classList.remove('incorrect', 'selected');
+                }, 500);
             }
             selectedCards = [];
         }
