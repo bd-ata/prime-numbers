@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>找因數遊戲</title>
+    <title>找因數配對遊戲</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -50,18 +50,17 @@
         }
 
         .option:hover {
-            background-color: #e8f5e9;
             transform: scale(1.05);
+            background-color: #e8f5e9;
         }
 
-        .correct {
+        .matched {
             background-color: #A5D6A7;
             cursor: default;
         }
 
-        .incorrect {
-            background-color: #E57373;
-            cursor: default;
+        .selected {
+            background-color: #FFECB3;
         }
 
         #score {
@@ -106,10 +105,10 @@
 </head>
 <body>
 
-<h1>找因數遊戲</h1>
-<div id="target-number">請找出數字 <strong id="number"></strong> 的所有因數</div>
+<h1>找因數配對遊戲</h1>
+<div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
-<div id="score">正確：<span id="correct-count">0</span>，錯誤：<span id="incorrect-count">0</span></div>
+<div id="score">配對完成數：<span id="matched-count">0</span></div>
 <button id="next-button">下一題</button>
 
 <!-- 音效檔案 -->
@@ -119,16 +118,13 @@
 <script>
     const numberElement = document.getElementById('number');
     const optionsContainer = document.getElementById('options');
-    const correctCountElement = document.getElementById('correct-count');
-    const incorrectCountElement = document.getElementById('incorrect-count');
+    const matchedCountElement = document.getElementById('matched-count');
     const nextButton = document.getElementById('next-button');
 
     let targetNumber;
     let factors = [];
-    let nonFactors = [];
-    let options = [];
-    let correctSelections = 0;
-    let incorrectSelections = 0;
+    let selectedCards = [];
+    let matchedCount = 0;
 
     function startGame() {
         resetGame();
@@ -139,42 +135,51 @@
     function resetGame() {
         optionsContainer.innerHTML = '';
         nextButton.style.display = 'none';
-        correctSelections = 0;
-        incorrectSelections = 0;
-        correctCountElement.textContent = correctSelections;
-        incorrectCountElement.textContent = incorrectSelections;
+        matchedCount = 0;
+        matchedCountElement.textContent = matchedCount;
+        selectedCards = [];
     }
 
     function generateQuestion() {
-        // 可以修改這裡的範圍，生成不同的目標數字
         targetNumber = Math.floor(Math.random() * 90) + 10; // 10 到 99 的數字
         numberElement.textContent = targetNumber;
-
-        factors = getFactors(targetNumber);
-        nonFactors = generateNonFactors(targetNumber, factors);
-
-        options = factors.concat(nonFactors);
-        shuffle(options);
+        factors = getFactorPairs(targetNumber);
     }
 
-    // 獲取一個數字的所有因數
-    function getFactors(num) {
-        let factors = [];
-        for (let i = 1; i <= Math.floor(num / 2); i++) {
+    // 獲取一個數字的因數配對組
+    function getFactorPairs(num) {
+        const pairs = [];
+        for (let i = 1; i <= Math.sqrt(num); i++) {
             if (num % i === 0) {
-                factors.push(i);
+                pairs.push([i, num / i]);
             }
         }
-        factors.push(num); // 加上自己本身
-        return factors;
+        return pairs;
     }
 
-    // 生成非因數的干擾項
-    function generateNonFactors(num, factors) {
-        let nonFactors = [];
-        while (nonFactors.length < factors.length) {
-            let randomNum = Math.floor(Math.random() * 90) + 2; // 2 到 99 的數字
-            if (num % randomNum !== 0 && !nonFactors.includes(randomNum)) {
+    function displayOptions() {
+        const flatFactors = factors.flat(); // 將因數對拍平成一維陣列
+        const extraNumbers = generateNonFactors(flatFactors);
+
+        const allOptions = flatFactors.concat(extraNumbers);
+        shuffle(allOptions);
+
+        allOptions.forEach(value => {
+            const optionDiv = document.createElement('div');
+            optionDiv.classList.add('option');
+            optionDiv.textContent = value;
+            optionDiv.dataset.value = value;
+            optionDiv.addEventListener('click', () => selectOption(optionDiv));
+            optionsContainer.appendChild(optionDiv);
+        });
+    }
+
+    // 生成一些干擾的非因數數字
+    function generateNonFactors(existingNumbers) {
+        const nonFactors = [];
+        while (nonFactors.length < existingNumbers.length) {
+            const randomNum = Math.floor(Math.random() * 90) + 2;
+            if (!existingNumbers.includes(randomNum) && !nonFactors.includes(randomNum)) {
                 nonFactors.push(randomNum);
             }
         }
@@ -186,47 +191,51 @@
         array.sort(() => Math.random() - 0.5);
     }
 
-    function displayOptions() {
-        options.forEach(value => {
-            const optionDiv = document.createElement('div');
-            optionDiv.classList.add('option');
-            optionDiv.textContent = value;
-            optionDiv.addEventListener('click', () => selectOption(optionDiv, value));
-            optionsContainer.appendChild(optionDiv);
-        });
-    }
-
-    function selectOption(element, value) {
-        if (element.classList.contains('correct') || element.classList.contains('incorrect')) {
+    function selectOption(element) {
+        if (element.classList.contains('matched') || selectedCards.includes(element)) {
             return;
         }
 
-        if (factors.includes(value)) {
-            element.classList.add('correct');
-            playSound('correct');
-            correctSelections++;
-            correctCountElement.textContent = correctSelections;
-            checkCompletion();
-        } else {
-            element.classList.add('incorrect');
-            playSound('wrong');
-            incorrectSelections++;
-            incorrectCountElement.textContent = incorrectSelections;
+        element.classList.add('selected');
+        selectedCards.push(element);
+
+        if (selectedCards.length === 2) {
+            const [first, second] = selectedCards;
+            const isMatch = checkMatch(first, second);
+
+            if (isMatch) {
+                playSound('correct');
+                selectedCards.forEach(card => {
+                    card.classList.add('matched');
+                    card.classList.remove('selected');
+                });
+                matchedCount++;
+                matchedCountElement.textContent = matchedCount;
+
+                if (matchedCount === factors.length) {
+                    nextButton.style.display = 'inline-block';
+                }
+            } else {
+                playSound('wrong');
+                setTimeout(() => {
+                    selectedCards.forEach(card => card.classList.remove('selected'));
+                }, 500);
+            }
+            selectedCards = [];
         }
     }
 
-    function checkCompletion() {
-        const allCorrectSelected = document.querySelectorAll('.correct').length === factors.length;
-        if (allCorrectSelected) {
-            nextButton.style.display = 'inline-block';
-        }
+    function checkMatch(card1, card2) {
+        const value1 = parseInt(card1.dataset.value);
+        const value2 = parseInt(card2.dataset.value);
+
+        return factors.some(pair =>
+            (pair[0] === value1 && pair[1] === value2) ||
+            (pair[0] === value2 && pair[1] === value1)
+        );
     }
 
-    nextButton.addEventListener('click', () => {
-        resetGame();
-        generateQuestion();
-        displayOptions();
-    });
+    nextButton.addEventListener('click', startGame);
 
     // 播放音效
     function playSound(type) {
