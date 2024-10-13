@@ -63,40 +63,6 @@
             background-color: #E57373;
         }
 
-        .pair-display {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .pair {
-            margin: 5px;
-            padding: 5px 10px;
-            background-color: #FFD54F;
-            border-radius: 5px;
-        }
-
-        #score {
-            font-size: 20px;
-            margin: 10px 0;
-        }
-
-        #next-button {
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            display: none;
-        }
-
-        #next-button:hover {
-            background-color: #45A049;
-        }
-
         #leaderboard {
             margin-top: 20px;
         }
@@ -117,6 +83,31 @@
             background-color: #4CAF50;
             color: white;
         }
+
+        #name-input {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #name-input input {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        #name-input button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #name-input button:hover {
+            background-color: #45A049;
+        }
     </style>
 </head>
 <body>
@@ -125,8 +116,10 @@
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
 <div id="score">配對完成數：<span id="matched-count">0</span></div>
-<div class="pair-display" id="pair-display"></div>
-<button id="next-button">下一題</button>
+<div id="name-input">
+    <input type="text" id="player-name" placeholder="輸入姓名">
+    <button onclick="saveScore()">保存成績</button>
+</div>
 
 <div id="leaderboard">
     <h2>排行榜</h2>
@@ -142,12 +135,16 @@
     </table>
 </div>
 
+<!-- 音效檔案 -->
+<audio id="correct-sound" src="correct.mp3"></audio>
+<audio id="wrong-sound" src="wrong.mp3"></audio>
+
 <script>
     const numberElement = document.getElementById('number');
     const optionsContainer = document.getElementById('options');
     const matchedCountElement = document.getElementById('matched-count');
-    const nextButton = document.getElementById('next-button');
-    const pairDisplay = document.getElementById('pair-display');
+    const nameInput = document.getElementById('name-input');
+    const playerNameInput = document.getElementById('player-name');
     const leaderboardBody = document.getElementById('leaderboard-body');
 
     let targetNumber;
@@ -164,11 +161,10 @@
 
     function resetGame() {
         optionsContainer.innerHTML = '';
-        nextButton.style.display = 'none';
         matchedCount = 0;
         matchedCountElement.textContent = matchedCount;
         selectedCards = [];
-        pairDisplay.innerHTML = '';
+        nameInput.style.display = 'none';
     }
 
     function generateQuestion() {
@@ -230,13 +226,14 @@
             const isMatch = checkMatch(first, second);
 
             if (isMatch) {
-                first.classList.add('matched');
-                second.classList.add('matched');
-                displayPair(first.dataset.value, second.dataset.value);
+                playSound('correct');
+                first.classList.add('correct');
+                second.classList.add('correct');
                 matchedCount++;
                 matchedCountElement.textContent = matchedCount;
-                if (matchedCount === factors.length) nextButton.style.display = 'inline-block';
+                if (matchedCount === factors.length) nameInput.style.display = 'block';
             } else {
+                playSound('wrong');
                 setTimeout(() => selectedCards.forEach(card => card.classList.remove('selected')), 500);
             }
             selectedCards = [];
@@ -249,19 +246,22 @@
         return factors.some(pair => (pair[0] === value1 && pair[1] === value2) || (pair[0] === value2 && pair[1] === value1));
     }
 
-    function displayPair(value1, value2) {
-        const pairDiv = document.createElement('div');
-        pairDiv.classList.add('pair');
-        pairDiv.textContent = `${value1} × ${value2}`;
-        pairDisplay.appendChild(pairDiv);
+    function playSound(type) {
+        const sound = document.getElementById(type + '-sound');
+        sound.currentTime = 0;
+        sound.play();
     }
 
-    function updateLeaderboard(name, score) {
-        leaderboard.push({ name, score });
-        leaderboard.sort((a, b) => b.score - a.score);
-        if (leaderboard.length > 10) leaderboard.pop();
-        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-        renderLeaderboard();
+    function saveScore() {
+        const name = playerNameInput.value.trim();
+        if (name) {
+            leaderboard.push({ name, score: matchedCount });
+            leaderboard.sort((a, b) => b.score - a.score);
+            if (leaderboard.length > 10) leaderboard.pop();
+            localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+            renderLeaderboard();
+            nameInput.style.display = 'none';
+        }
     }
 
     function renderLeaderboard() {
@@ -271,8 +271,6 @@
             leaderboardBody.insertAdjacentHTML('beforeend', row);
         });
     }
-
-    nextButton.addEventListener('click', startGame);
 
     renderLeaderboard();
     startGame();
