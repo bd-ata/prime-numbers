@@ -21,7 +21,7 @@
 
         #target-number {
             font-size: 24px;
-            margin: 20px 0;
+            margin: 20px 10px;
         }
 
         #options {
@@ -54,18 +54,32 @@
             background-color: #e8f5e9;
         }
 
-        .matched {
+        .correct {
             background-color: #A5D6A7;
             cursor: default;
         }
 
-        .selected {
-            background-color: #FFECB3;
+        .incorrect {
+            background-color: #E57373;
+        }
+
+        .pair-display {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pair {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #FFD54F;
+            border-radius: 5px;
         }
 
         #score {
             font-size: 20px;
-            margin: 20px 0;
+            margin: 10px 0;
         }
 
         #next-button {
@@ -83,23 +97,25 @@
             background-color: #45A049;
         }
 
-        /* 音效控制 */
-        audio {
-            display: none;
+        #leaderboard {
+            margin-top: 20px;
         }
 
-        /* 手機響應式 */
-        @media (max-width: 768px) {
-            #options {
-                width: 100%;
-            }
+        #leaderboard table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 60%;
+        }
 
-            .option {
-                width: 60px;
-                height: 60px;
-                margin: 8px;
-                font-size: 20px;
-            }
+        #leaderboard th, #leaderboard td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #leaderboard th {
+            background-color: #4CAF50;
+            color: white;
         }
     </style>
 </head>
@@ -109,22 +125,36 @@
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
 <div id="score">配對完成數：<span id="matched-count">0</span></div>
+<div class="pair-display" id="pair-display"></div>
 <button id="next-button">下一題</button>
 
-<!-- 音效檔案 -->
-<audio id="correct-sound" src="correct.mp3"></audio>
-<audio id="wrong-sound" src="wrong.mp3"></audio>
+<div id="leaderboard">
+    <h2>排行榜</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>名次</th>
+                <th>姓名</th>
+                <th>答對題數</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard-body"></tbody>
+    </table>
+</div>
 
 <script>
     const numberElement = document.getElementById('number');
     const optionsContainer = document.getElementById('options');
     const matchedCountElement = document.getElementById('matched-count');
     const nextButton = document.getElementById('next-button');
+    const pairDisplay = document.getElementById('pair-display');
+    const leaderboardBody = document.getElementById('leaderboard-body');
 
     let targetNumber;
     let factors = [];
     let selectedCards = [];
     let matchedCount = 0;
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
     function startGame() {
         resetGame();
@@ -138,15 +168,15 @@
         matchedCount = 0;
         matchedCountElement.textContent = matchedCount;
         selectedCards = [];
+        pairDisplay.innerHTML = '';
     }
 
     function generateQuestion() {
-        targetNumber = Math.floor(Math.random() * 90) + 10; // 10 到 99 的數字
+        targetNumber = Math.floor(Math.random() * 90) + 10;
         numberElement.textContent = targetNumber;
         factors = getFactorPairs(targetNumber);
     }
 
-    // 獲取一個數字的因數配對組
     function getFactorPairs(num) {
         const pairs = [];
         for (let i = 1; i <= Math.sqrt(num); i++) {
@@ -158,7 +188,7 @@
     }
 
     function displayOptions() {
-        const flatFactors = factors.flat(); // 將因數對拍平成一維陣列
+        const flatFactors = factors.flat();
         const extraNumbers = generateNonFactors(flatFactors);
 
         const allOptions = flatFactors.concat(extraNumbers);
@@ -174,7 +204,6 @@
         });
     }
 
-    // 生成一些干擾的非因數數字
     function generateNonFactors(existingNumbers) {
         const nonFactors = [];
         while (nonFactors.length < existingNumbers.length) {
@@ -186,15 +215,12 @@
         return nonFactors;
     }
 
-    // 隨機排列數組
     function shuffle(array) {
         array.sort(() => Math.random() - 0.5);
     }
 
     function selectOption(element) {
-        if (element.classList.contains('matched') || selectedCards.includes(element)) {
-            return;
-        }
+        if (element.classList.contains('matched') || selectedCards.includes(element)) return;
 
         element.classList.add('selected');
         selectedCards.push(element);
@@ -204,22 +230,14 @@
             const isMatch = checkMatch(first, second);
 
             if (isMatch) {
-                playSound('correct');
-                selectedCards.forEach(card => {
-                    card.classList.add('matched');
-                    card.classList.remove('selected');
-                });
+                first.classList.add('matched');
+                second.classList.add('matched');
+                displayPair(first.dataset.value, second.dataset.value);
                 matchedCount++;
                 matchedCountElement.textContent = matchedCount;
-
-                if (matchedCount === factors.length) {
-                    nextButton.style.display = 'inline-block';
-                }
+                if (matchedCount === factors.length) nextButton.style.display = 'inline-block';
             } else {
-                playSound('wrong');
-                setTimeout(() => {
-                    selectedCards.forEach(card => card.classList.remove('selected'));
-                }, 500);
+                setTimeout(() => selectedCards.forEach(card => card.classList.remove('selected')), 500);
             }
             selectedCards = [];
         }
@@ -228,23 +246,35 @@
     function checkMatch(card1, card2) {
         const value1 = parseInt(card1.dataset.value);
         const value2 = parseInt(card2.dataset.value);
+        return factors.some(pair => (pair[0] === value1 && pair[1] === value2) || (pair[0] === value2 && pair[1] === value1));
+    }
 
-        return factors.some(pair =>
-            (pair[0] === value1 && pair[1] === value2) ||
-            (pair[0] === value2 && pair[1] === value1)
-        );
+    function displayPair(value1, value2) {
+        const pairDiv = document.createElement('div');
+        pairDiv.classList.add('pair');
+        pairDiv.textContent = `${value1} × ${value2}`;
+        pairDisplay.appendChild(pairDiv);
+    }
+
+    function updateLeaderboard(name, score) {
+        leaderboard.push({ name, score });
+        leaderboard.sort((a, b) => b.score - a.score);
+        if (leaderboard.length > 10) leaderboard.pop();
+        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+        renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+        leaderboardBody.innerHTML = '';
+        leaderboard.forEach((entry, index) => {
+            const row = `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
+            leaderboardBody.insertAdjacentHTML('beforeend', row);
+        });
     }
 
     nextButton.addEventListener('click', startGame);
 
-    // 播放音效
-    function playSound(type) {
-        const sound = document.getElementById(type + '-sound');
-        sound.currentTime = 0;
-        sound.play();
-    }
-
-    // 開始遊戲
+    renderLeaderboard();
     startGame();
 </script>
 
