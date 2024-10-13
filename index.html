@@ -126,12 +126,13 @@
     const pairDisplay = document.getElementById('pair-display');
     const nextButton = document.getElementById('next-button');
 
+    const mustIncludeNumbers = [65, 84, 38, 42 ,48 ,36 ,12];
+    const totalQuestions = 10;
     let factors = [];
     let selectedCards = [];
     let correctCount = 0;
     let incorrectCount = 0;
     let currentQuestion = 1;
-    const TOTAL_QUESTIONS = 10;
 
     function startGame() {
         resetGame();
@@ -149,7 +150,7 @@
     }
 
     function nextQuestion() {
-        if (currentQuestion <= TOTAL_QUESTIONS) {
+        if (currentQuestion <= totalQuestions) {
             generateQuestion();
             displayOptions();
             progressElement.textContent = currentQuestion;
@@ -160,7 +161,12 @@
     }
 
     function generateQuestion() {
-        const number = Math.floor(Math.random() * 100) + 1;
+        let number;
+        if (mustIncludeNumbers.length > 0) {
+            number = mustIncludeNumbers.shift();
+        } else {
+            number = Math.floor(Math.random() * 100) + 1;
+        }
         numberElement.textContent = number;
         factors = getFactors(number);
         pairDisplay.innerHTML = '';  // 清空配對結果
@@ -172,6 +178,10 @@
             if (num % i === 0) {
                 factors.push(i);
             }
+        }
+        if (Math.sqrt(num) % 1 === 0) {
+            const sqrt = Math.sqrt(num);
+            factors.splice(factors.indexOf(sqrt), 1, sqrt, sqrt); // 重複平方根因數
         }
         return factors.sort((a, b) => a - b);
     }
@@ -270,4 +280,4 @@
 </script>
 
 </body>
-</html>
+</html
