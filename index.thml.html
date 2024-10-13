@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2566">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="zh-TW"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;找因數遊戲&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #f0f0f0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>h1 {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #4CAF50;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>#target-number {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 24px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 20px 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>#options {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>width: 80%;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>flex-wrap: wrap;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.option {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>width: 80px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: 80px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #333;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 24px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>user-select: none;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: 2px solid #4CAF50;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transition: background-color 0.2s, transform 0.2s;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.option:hover {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #e8f5e9;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transform: scale(1.05);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.correct {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #A5D6A7;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: default;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.incorrect {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #E57373;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: default;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>#score {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 20px 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>#next-button {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #4CAF50;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 5px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>#next-button:hover {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #45A049;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 音效控制 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>audio {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: none;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* 手機響應式 */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>@media (max-width: 768px) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>#options {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>.option {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>width: 60px;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>height: 60px;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>margin: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>font-size: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;h1&gt;找因數遊戲&lt;/h1&gt;</p>
+<p class="p1">&lt;div id="target-number"&gt;請找出數字 &lt;strong id="number"&gt;&lt;/strong&gt; 的所有因數&lt;/div&gt;</p>
+<p class="p1">&lt;div id="options"&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;div id="score"&gt;正確：&lt;span id="correct-count"&gt;0&lt;/span&gt;，錯誤：&lt;span id="incorrect-count"&gt;0&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;button id="next-button"&gt;下一題&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;!-- 音效檔案 --&gt;</p>
+<p class="p1">&lt;audio id="correct-sound" src="correct.mp3"&gt;&lt;/audio&gt;</p>
+<p class="p1">&lt;audio id="wrong-sound" src="wrong.mp3"&gt;&lt;/audio&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const numberElement = document.getElementById('number');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const optionsContainer = document.getElementById('options');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const correctCountElement = document.getElementById('correct-count');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const incorrectCountElement = document.getElementById('incorrect-count');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const nextButton = document.getElementById('next-button');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>let targetNumber;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let factors = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let nonFactors = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let options = [];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let correctSelections = 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let incorrectSelections = 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function startGame() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resetGame();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>generateQuestion();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>displayOptions();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function resetGame() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>optionsContainer.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>nextButton.style.display = 'none';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>correctSelections = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>incorrectSelections = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>correctCountElement.textContent = correctSelections;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>incorrectCountElement.textContent = incorrectSelections;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function generateQuestion() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 可以修改這裡的範圍，生成不同的目標數字</p>
+<p class="p1"><span class="Apple-converted-space">        </span>targetNumber = Math.floor(Math.random() * 90) + 10; // 10 到 99 的數字</p>
+<p class="p1"><span class="Apple-converted-space">        </span>numberElement.textContent = targetNumber;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>factors = getFactors(targetNumber);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>nonFactors = generateNonFactors(targetNumber, factors);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>options = factors.concat(nonFactors);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>shuffle(options);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// 獲取一個數字的所有因數</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function getFactors(num) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let factors = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>for (let i = 1; i &lt;= Math.floor(num / 2); i++) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (num % i === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>factors.push(i);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>factors.push(num); // 加上自己本身</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return factors;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// 生成非因數的干擾項</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function generateNonFactors(num, factors) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let nonFactors = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>while (nonFactors.length &lt; factors.length) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>let randomNum = Math.floor(Math.random() * 90) + 2; // 2 到 99 的數字</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (num % randomNum !== 0 &amp;&amp; !nonFactors.includes(randomNum)) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>nonFactors.push(randomNum);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return nonFactors;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// 隨機排列數組</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function shuffle(array) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>array.sort(() =&gt; Math.random() - 0.5);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function displayOptions() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>options.forEach(value =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const optionDiv = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>optionDiv.classList.add('option');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>optionDiv.textContent = value;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>optionDiv.addEventListener('click', () =&gt; selectOption(optionDiv, value));</p>
+<p class="p1"><span class="Apple-converted-space">            </span>optionsContainer.appendChild(optionDiv);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function selectOption(element, value) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (element.classList.contains('correct') || element.classList.contains('incorrect')) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (factors.includes(value)) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>element.classList.add('correct');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>playSound('correct');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>correctSelections++;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>correctCountElement.textContent = correctSelections;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>checkCompletion();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>element.classList.add('incorrect');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>playSound('wrong');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>incorrectSelections++;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>incorrectCountElement.textContent = incorrectSelections;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function checkCompletion() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const allCorrectSelected = document.querySelectorAll('.correct').length === factors.length;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (allCorrectSelected) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>nextButton.style.display = 'inline-block';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>nextButton.addEventListener('click', () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>resetGame();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>generateQuestion();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>displayOptions();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// 播放音效</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function playSound(type) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const sound = document.getElementById(type + '-sound');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>sound.currentTime = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>sound.play();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// 開始遊戲</p>
+<p class="p1"><span class="Apple-converted-space">    </span>startGame();</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
