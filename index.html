@@ -151,10 +151,15 @@
     }
 
     function generateQuestion() {
-        targetNumber = Math.floor(Math.random() * 90) + 10;
+        targetNumber = getSquareNumber();
         numberElement.textContent = targetNumber;
         factors = getFactorPairs(targetNumber);
         pairDisplay.innerHTML = '';  // 清空先前的配對結果
+    }
+
+    function getSquareNumber() {
+        const squareNumbers = [4, 9, 16, 25, 36, 49, 64, 81, 100];
+        return squareNumbers[Math.floor(Math.random() * squareNumbers.length)];
     }
 
     function getFactorPairs(num) {
@@ -169,13 +174,10 @@
 
     function displayOptions() {
         optionsContainer.innerHTML = '';
-        const flatFactors = factors.flat();
-        const extraNumbers = generateNonFactors(flatFactors);
+        const flatFactors = factors.flat().concat(factors.flat()); // 重複因數
+        shuffle(flatFactors);
 
-        const allOptions = flatFactors.concat(extraNumbers);
-        shuffle(allOptions);
-
-        allOptions.forEach(value => {
+        flatFactors.forEach(value => {
             const optionDiv = document.createElement('div');
             optionDiv.classList.add('option');
             optionDiv.textContent = value;
@@ -183,17 +185,6 @@
             optionDiv.addEventListener('click', () => selectOption(optionDiv));
             optionsContainer.appendChild(optionDiv);
         });
-    }
-
-    function generateNonFactors(existingNumbers) {
-        const nonFactors = [];
-        while (nonFactors.length < existingNumbers.length) {
-            const randomNum = Math.floor(Math.random() * 90) + 2;
-            if (!existingNumbers.includes(randomNum)) {
-                nonFactors.push(randomNum);
-            }
-        }
-        return nonFactors;
     }
 
     function shuffle(array) {
@@ -250,7 +241,7 @@
 
     function checkAllMatched() {
         const matchedCards = document.querySelectorAll('.correct');
-        if (matchedCards.length === factors.flat().length) {
+        if (matchedCards.length === factors.flat().length * 2) {
             nextButton.style.display = 'block';
         }
     }
