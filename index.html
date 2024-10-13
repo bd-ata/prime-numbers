@@ -65,6 +65,7 @@
 
         #leaderboard {
             margin-top: 20px;
+            display: none;
         }
 
         #leaderboard table {
@@ -122,8 +123,8 @@
 <h1>找因數配對遊戲</h1>
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
-<div id="score">配對完成數：<span id="matched-count">0</span></div>
-<div id="message">未達到50題，無法進入排行榜。</div>
+<div id="score">目前正確配對數：<span id="matched-count">0</span></div>
+
 <div id="name-input">
     <input type="text" id="player-name" placeholder="輸入姓名">
     <button onclick="saveScore()">保存成績</button>
@@ -136,7 +137,7 @@
             <tr>
                 <th>名次</th>
                 <th>姓名</th>
-                <th>答對題數</th>
+                <th>正確配對數</th>
             </tr>
         </thead>
         <tbody id="leaderboard-body"></tbody>
@@ -154,27 +155,38 @@
     const nameInput = document.getElementById('name-input');
     const playerNameInput = document.getElementById('player-name');
     const leaderboardBody = document.getElementById('leaderboard-body');
-    const messageElement = document.getElementById('message');
+    const leaderboardDiv = document.getElementById('leaderboard');
 
     let targetNumber;
     let factors = [];
     let selectedCards = [];
     let matchedCount = 0;
+    let currentQuestion = 0;
     let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+
+    const TOTAL_QUESTIONS = 20;
 
     function startGame() {
         resetGame();
-        generateQuestion();
-        displayOptions();
+        nextQuestion();
     }
 
     function resetGame() {
-        optionsContainer.innerHTML = '';
         matchedCount = 0;
+        currentQuestion = 0;
         matchedCountElement.textContent = matchedCount;
-        selectedCards = [];
         nameInput.style.display = 'none';
-        messageElement.style.display = 'none';
+        leaderboardDiv.style.display = 'none';
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < TOTAL_QUESTIONS) {
+            generateQuestion();
+            displayOptions();
+            currentQuestion++;
+        } else {
+            endGame();
+        }
     }
 
     function generateQuestion() {
@@ -194,6 +206,7 @@
     }
 
     function displayOptions() {
+        optionsContainer.innerHTML = '';
         const flatFactors = factors.flat();
         const extraNumbers = generateNonFactors(flatFactors);
 
@@ -214,7 +227,7 @@
         const nonFactors = [];
         while (nonFactors.length < existingNumbers.length) {
             const randomNum = Math.floor(Math.random() * 90) + 2;
-            if (!existingNumbers.includes(randomNum) && !nonFactors.includes(randomNum)) {
+            if (!existingNumbers.includes(randomNum)) {
                 nonFactors.push(randomNum);
             }
         }
@@ -226,7 +239,7 @@
     }
 
     function selectOption(element) {
-        if (element.classList.contains('matched') || selectedCards.includes(element)) return;
+        if (element.classList.contains('matched')) return;
 
         element.classList.add('selected');
         selectedCards.push(element);
@@ -241,13 +254,11 @@
                 second.classList.add('correct');
                 matchedCount++;
                 matchedCountElement.textContent = matchedCount;
-
-                if (matchedCount === factors.length) checkEligibility();
             } else {
                 playSound('wrong');
-                setTimeout(() => selectedCards.forEach(card => card.classList.remove('selected')), 500);
             }
             selectedCards = [];
+            setTimeout(nextQuestion, 500);
         }
     }
 
@@ -263,11 +274,12 @@
         sound.play();
     }
 
-    function checkEligibility() {
-        if (matchedCount >= 50) {
+    function endGame() {
+        if (matchedCount >= 10) {
             nameInput.style.display = 'block';
         } else {
-            messageElement.style.display = 'block';
+            renderLeaderboard();
+            leaderboardDiv.style.display = 'block';
         }
     }
 
@@ -279,6 +291,7 @@
             if (leaderboard.length > 10) leaderboard.pop();
             localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
             renderLeaderboard();
+            leaderboardDiv.style.display = 'block';
             nameInput.style.display = 'none';
         }
     }
@@ -291,7 +304,6 @@
         });
     }
 
-    renderLeaderboard();
     startGame();
 </script>
 
