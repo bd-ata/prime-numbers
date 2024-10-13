@@ -108,6 +108,13 @@
         #name-input button:hover {
             background-color: #45A049;
         }
+
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: red;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -116,6 +123,7 @@
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
 <div id="score">配對完成數：<span id="matched-count">0</span></div>
+<div id="message">未達到50題，無法進入排行榜。</div>
 <div id="name-input">
     <input type="text" id="player-name" placeholder="輸入姓名">
     <button onclick="saveScore()">保存成績</button>
@@ -146,6 +154,7 @@
     const nameInput = document.getElementById('name-input');
     const playerNameInput = document.getElementById('player-name');
     const leaderboardBody = document.getElementById('leaderboard-body');
+    const messageElement = document.getElementById('message');
 
     let targetNumber;
     let factors = [];
@@ -165,6 +174,7 @@
         matchedCountElement.textContent = matchedCount;
         selectedCards = [];
         nameInput.style.display = 'none';
+        messageElement.style.display = 'none';
     }
 
     function generateQuestion() {
@@ -231,7 +241,8 @@
                 second.classList.add('correct');
                 matchedCount++;
                 matchedCountElement.textContent = matchedCount;
-                if (matchedCount === factors.length) nameInput.style.display = 'block';
+
+                if (matchedCount === factors.length) checkEligibility();
             } else {
                 playSound('wrong');
                 setTimeout(() => selectedCards.forEach(card => card.classList.remove('selected')), 500);
@@ -250,6 +261,14 @@
         const sound = document.getElementById(type + '-sound');
         sound.currentTime = 0;
         sound.play();
+    }
+
+    function checkEligibility() {
+        if (matchedCount >= 50) {
+            nameInput.style.display = 'block';
+        } else {
+            messageElement.style.display = 'block';
+        }
     }
 
     function saveScore() {
