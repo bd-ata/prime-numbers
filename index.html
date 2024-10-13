@@ -89,7 +89,7 @@
             border-radius: 5px;
             cursor: pointer;
             display: none;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         #next-button:hover {
@@ -102,7 +102,7 @@
 <h1>找因數配對遊戲</h1>
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
-<div id="score">目前正確配對：<span id="correct-count">0</span></div>
+<div id="score">正確配對：<span id="correct-count">0</span> | 錯誤配對：<span id="incorrect-count">0</span></div>
 <div class="pair-display" id="pair-display"></div>
 <button id="next-button" onclick="nextQuestion()">下一題</button>
 
@@ -114,6 +114,7 @@
     const numberElement = document.getElementById('number');
     const optionsContainer = document.getElementById('options');
     const correctCountElement = document.getElementById('correct-count');
+    const incorrectCountElement = document.getElementById('incorrect-count');
     const pairDisplay = document.getElementById('pair-display');
     const nextButton = document.getElementById('next-button');
 
@@ -122,6 +123,7 @@
     let factors = [];
     let selectedCards = [];
     let correctCount = 0;
+    let incorrectCount = 0;
     let currentQuestion = 0;
     const TOTAL_QUESTIONS = 20;
 
@@ -132,8 +134,10 @@
 
     function resetGame() {
         correctCount = 0;
+        incorrectCount = 0;
         currentQuestion = 0;
         correctCountElement.textContent = correctCount;
+        incorrectCountElement.textContent = incorrectCount;
         nextButton.style.display = 'none';
         pairDisplay.innerHTML = '';
         usedNumbers.clear();
@@ -158,23 +162,24 @@
 
         targetNumber = number;
         numberElement.textContent = targetNumber;
-        factors = getFactors(targetNumber);
-        pairDisplay.innerHTML = `因數：${factors.join('、')}`; // 顯示完整因數
+        factors = getFactorPairs(targetNumber);
+        pairDisplay.innerHTML = '';  // 清空配對結果
     }
 
-    function getFactors(num) {
-        const factors = [];
-        for (let i = 1; i <= num; i++) {
+    function getFactorPairs(num) {
+        const pairs = [];
+        for (let i = 1; i <= Math.sqrt(num); i++) {
             if (num % i === 0) {
-                factors.push(i);
+                pairs.push([i, num / i]);
             }
         }
-        return factors;
+        return pairs;
     }
 
     function displayOptions() {
         optionsContainer.innerHTML = '';
-        const options = [...factors, ...generateNonFactors(factors)];
+        const flatFactors = factors.flat();
+        const options = flatFactors.concat(generateNonFactors(flatFactors));
         shuffle(options);
 
         options.forEach(value => {
@@ -218,9 +223,12 @@
                 second.classList.add('correct');
                 correctCount++;
                 correctCountElement.textContent = correctCount;
+                displayPair(first.dataset.value, second.dataset.value);
                 checkAllMatched();
             } else {
                 playSound('wrong');
+                incorrectCount++;
+                incorrectCountElement.textContent = incorrectCount;
                 first.classList.add('incorrect');
                 second.classList.add('incorrect');
                 setTimeout(() => {
@@ -235,7 +243,10 @@
     function checkMatch(card1, card2) {
         const value1 = parseInt(card1.dataset.value);
         const value2 = parseInt(card2.dataset.value);
-        return factors.includes(value1) && factors.includes(value2) && value1 !== value2;
+        return factors.some(pair =>
+            (pair[0] === value1 && pair[1] === value2) ||
+            (pair[0] === value2 && pair[1] === value1)
+        );
     }
 
     function playSound(type) {
@@ -244,10 +255,18 @@
         sound.play();
     }
 
+    function displayPair(value1, value2) {
+        const pairDiv = document.createElement('div');
+        pairDiv.classList.add('pair');
+        pairDiv.textContent = `${value1} × ${value2}`;
+        pairDisplay.appendChild(pairDiv);
+    }
+
     function checkAllMatched() {
         const matchedCards = document.querySelectorAll('.correct');
-        if (matchedCards.length === factors.length) {
+        if (matchedCards.length === factors.flat().length) {
             nextButton.style.display = 'block';
+            pairDisplay.innerHTML += `<p>${targetNumber} 的因數有：${factors.flat().join('、')}</p>`;
         }
     }
 
