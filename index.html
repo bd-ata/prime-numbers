@@ -151,15 +151,17 @@
     }
 
     function generateQuestion() {
-        targetNumber = getSquareNumber();
+        targetNumber = getSquareOrRandomNumber();
         numberElement.textContent = targetNumber;
         factors = getFactorPairs(targetNumber);
         pairDisplay.innerHTML = '';  // 清空先前的配對結果
     }
 
-    function getSquareNumber() {
+    function getSquareOrRandomNumber() {
         const squareNumbers = [4, 9, 16, 25, 36, 49, 64, 81, 100];
-        return squareNumbers[Math.floor(Math.random() * squareNumbers.length)];
+        return Math.random() < 0.5
+            ? squareNumbers[Math.floor(Math.random() * squareNumbers.length)]
+            : Math.floor(Math.random() * 90) + 10;
     }
 
     function getFactorPairs(num) {
@@ -174,10 +176,11 @@
 
     function displayOptions() {
         optionsContainer.innerHTML = '';
-        const flatFactors = factors.flat().concat(factors.flat()); // 重複因數
-        shuffle(flatFactors);
+        const flatFactors = factors.flat();
+        const options = flatFactors.concat(generateNonFactors(flatFactors));
+        shuffle(options);
 
-        flatFactors.forEach(value => {
+        options.forEach(value => {
             const optionDiv = document.createElement('div');
             optionDiv.classList.add('option');
             optionDiv.textContent = value;
@@ -185,6 +188,17 @@
             optionDiv.addEventListener('click', () => selectOption(optionDiv));
             optionsContainer.appendChild(optionDiv);
         });
+    }
+
+    function generateNonFactors(existingNumbers) {
+        const nonFactors = [];
+        while (nonFactors.length < existingNumbers.length) {
+            const randomNum = Math.floor(Math.random() * 90) + 2;
+            if (!existingNumbers.includes(randomNum)) {
+                nonFactors.push(randomNum);
+            }
+        }
+        return nonFactors;
     }
 
     function shuffle(array) {
@@ -205,6 +219,8 @@
                 playSound('correct');
                 first.classList.add('correct');
                 second.classList.add('correct');
+                correctCount++;
+                correctCountElement.textContent = correctCount;
                 displayPair(first.dataset.value, second.dataset.value);
                 checkAllMatched();
             } else {
@@ -223,7 +239,10 @@
     function checkMatch(card1, card2) {
         const value1 = parseInt(card1.dataset.value);
         const value2 = parseInt(card2.dataset.value);
-        return factors.some(pair => (pair[0] === value1 && pair[1] === value2) || (pair[0] === value2 && pair[1] === value1));
+        return factors.some(pair =>
+            (pair[0] === value1 && pair[1] === value2) ||
+            (pair[0] === value2 && pair[1] === value1)
+        );
     }
 
     function playSound(type) {
@@ -241,7 +260,7 @@
 
     function checkAllMatched() {
         const matchedCards = document.querySelectorAll('.correct');
-        if (matchedCards.length === factors.flat().length * 2) {
+        if (matchedCards.length === factors.flat().length) {
             nextButton.style.display = 'block';
         }
     }
