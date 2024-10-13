@@ -63,26 +63,23 @@
             background-color: #E57373;
         }
 
-        #leaderboard {
+        #score {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .pair-display {
             margin-top: 20px;
-            display: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        #leaderboard table {
-            margin: 0 auto;
-            border-collapse: collapse;
-            width: 60%;
-        }
-
-        #leaderboard th, #leaderboard td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        #leaderboard th {
-            background-color: #4CAF50;
-            color: white;
+        .pair {
+            margin: 5px;
+            padding: 5px 10px;
+            background-color: #FFD54F;
+            border-radius: 5px;
         }
 
         #name-input {
@@ -109,13 +106,6 @@
         #name-input button:hover {
             background-color: #45A049;
         }
-
-        #message {
-            margin-top: 20px;
-            font-size: 18px;
-            color: red;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -123,25 +113,14 @@
 <h1>找因數配對遊戲</h1>
 <div id="target-number">請找出數字 <strong id="number"></strong> 的因數配對</div>
 <div id="options"></div>
-<div id="score">目前正確配對數：<span id="matched-count">0</span></div>
+<div id="score">
+    正確配對：<span id="correct-count">0</span> | 錯誤配對：<span id="incorrect-count">0</span>
+</div>
+<div class="pair-display" id="pair-display"></div>
 
 <div id="name-input">
     <input type="text" id="player-name" placeholder="輸入姓名">
     <button onclick="saveScore()">保存成績</button>
-</div>
-
-<div id="leaderboard">
-    <h2>排行榜</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>名次</th>
-                <th>姓名</th>
-                <th>正確配對數</th>
-            </tr>
-        </thead>
-        <tbody id="leaderboard-body"></tbody>
-    </table>
 </div>
 
 <!-- 音效檔案 -->
@@ -151,48 +130,40 @@
 <script>
     const numberElement = document.getElementById('number');
     const optionsContainer = document.getElementById('options');
-    const matchedCountElement = document.getElementById('matched-count');
+    const correctCountElement = document.getElementById('correct-count');
+    const incorrectCountElement = document.getElementById('incorrect-count');
+    const pairDisplay = document.getElementById('pair-display');
     const nameInput = document.getElementById('name-input');
     const playerNameInput = document.getElementById('player-name');
-    const leaderboardBody = document.getElementById('leaderboard-body');
-    const leaderboardDiv = document.getElementById('leaderboard');
 
     let targetNumber;
     let factors = [];
     let selectedCards = [];
-    let matchedCount = 0;
-    let currentQuestion = 0;
-    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-
-    const TOTAL_QUESTIONS = 20;
+    let correctCount = 0;
+    let incorrectCount = 0;
 
     function startGame() {
         resetGame();
-        nextQuestion();
+        generateQuestion();
+        displayOptions();
     }
 
     function resetGame() {
-        matchedCount = 0;
-        currentQuestion = 0;
-        matchedCountElement.textContent = matchedCount;
+        optionsContainer.innerHTML = '';
+        correctCount = 0;
+        incorrectCount = 0;
+        correctCountElement.textContent = correctCount;
+        incorrectCountElement.textContent = incorrectCount;
+        selectedCards = [];
+        pairDisplay.innerHTML = '';
         nameInput.style.display = 'none';
-        leaderboardDiv.style.display = 'none';
-    }
-
-    function nextQuestion() {
-        if (currentQuestion < TOTAL_QUESTIONS) {
-            generateQuestion();
-            displayOptions();
-            currentQuestion++;
-        } else {
-            endGame();
-        }
     }
 
     function generateQuestion() {
         targetNumber = Math.floor(Math.random() * 90) + 10;
         numberElement.textContent = targetNumber;
         factors = getFactorPairs(targetNumber);
+        displayPairs();
     }
 
     function getFactorPairs(num) {
@@ -206,7 +177,6 @@
     }
 
     function displayOptions() {
-        optionsContainer.innerHTML = '';
         const flatFactors = factors.flat();
         const extraNumbers = generateNonFactors(flatFactors);
 
@@ -239,7 +209,7 @@
     }
 
     function selectOption(element) {
-        if (element.classList.contains('matched')) return;
+        if (element.classList.contains('matched') || selectedCards.includes(element)) return;
 
         element.classList.add('selected');
         selectedCards.push(element);
@@ -252,13 +222,14 @@
                 playSound('correct');
                 first.classList.add('correct');
                 second.classList.add('correct');
-                matchedCount++;
-                matchedCountElement.textContent = matchedCount;
+                correctCount++;
+                correctCountElement.textContent = correctCount;
             } else {
                 playSound('wrong');
+                incorrectCount++;
+                incorrectCountElement.textContent = incorrectCount;
             }
             selectedCards = [];
-            setTimeout(nextQuestion, 500);
         }
     }
 
@@ -274,33 +245,13 @@
         sound.play();
     }
 
-    function endGame() {
-        if (matchedCount >= 10) {
-            nameInput.style.display = 'block';
-        } else {
-            renderLeaderboard();
-            leaderboardDiv.style.display = 'block';
-        }
-    }
-
-    function saveScore() {
-        const name = playerNameInput.value.trim();
-        if (name) {
-            leaderboard.push({ name, score: matchedCount });
-            leaderboard.sort((a, b) => b.score - a.score);
-            if (leaderboard.length > 10) leaderboard.pop();
-            localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-            renderLeaderboard();
-            leaderboardDiv.style.display = 'block';
-            nameInput.style.display = 'none';
-        }
-    }
-
-    function renderLeaderboard() {
-        leaderboardBody.innerHTML = '';
-        leaderboard.forEach((entry, index) => {
-            const row = `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score}</td></tr>`;
-            leaderboardBody.insertAdjacentHTML('beforeend', row);
+    function displayPairs() {
+        pairDisplay.innerHTML = '';
+        factors.forEach(pair => {
+            const pairDiv = document.createElement('div');
+            pairDiv.classList.add('pair');
+            pairDiv.textContent = `${pair[0]} × ${pair[1]}`;
+            pairDisplay.appendChild(pairDiv);
         });
     }
 
